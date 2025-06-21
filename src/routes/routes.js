@@ -9,7 +9,6 @@ import {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
-  getCurrentUserProfile,
   updateUserProfile,
   getMentors,
   getMentorById,
@@ -51,9 +50,7 @@ const router = Router();
 
 // ========== AUTH & USER ==========
 router.route("/register").post(
-  upload.fields([
-    { name: "avatar", maxCount: 1 },
-  ]),
+  upload.single("avatar"),
   registerUser
 );
 
@@ -62,8 +59,7 @@ router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
-router.route("/profile/:id").get(getCurrentUserProfile);
-router.route("/update-profile").patch(verifyJWT, updateUserProfile);
+router.route("/update-profile").patch(verifyJWT,upload.single("avatar"), updateUserProfile);
 
 // ========== MENTORS ==========
 router.route("/mentors").get(getMentors);

@@ -33,22 +33,26 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with email or username already exists");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  if (!avatarLocalPath) throw new ApiError(400, "Avatar file is required");
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+  let avatarUploadResult = null;
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  if (!avatar) throw new ApiError(400, "Failed to upload avatar");
+  if (avatarLocalPath) {
+    avatarUploadResult = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatarUploadResult) {
+      throw new ApiError(400, "Failed to upload avatar");
+    }
+  }
 
   const user = await User.create({
     fullName,
-    avatar: avatar.url,
     email,
     password,
     username,
-    avatar_public_id: avatar.public_id,
     role,
-    skills: role === "mentor" ? skills || [] : [],
     bio: bio || "",
+    skills: role === "mentor" ? skills || [] : [],
+    avatar: avatarUploadResult?.url || "",
+    avatar_public_id: avatarUploadResult?.public_id || "",
   });
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -129,31 +133,19 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-const getCurrentUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password -refreshToken");
-
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "User profile fetched successfully"));
-});
-
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, req.user, "User fetched successfully"));
 });
 
-const updateUserProfile = asyncHandler(async (req, res) => {
+const updateUserProfile = asyncHandler(async (req, res) => {  
   const user = await User.findById(req.user._id);
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-
+  
   const { fullName, bio, skills } = req.body;
 
   if (req.files?.avatar) {
@@ -161,7 +153,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     const avatarUpload = await uploadOnCloudinary(req.files.avatar[0].path);
     user.avatar = avatarUpload.url;
     user.avatar_public_id = avatarUpload.public_id;
-  }
+  }  
 
   if (fullName) user.fullName = fullName;
   if (bio) user.bio = bio;
@@ -216,7 +208,6 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
-  getCurrentUserProfile,
   updateUserProfile,
   getMentors,
   getMentorById,

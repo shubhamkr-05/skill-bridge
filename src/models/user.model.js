@@ -8,7 +8,7 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     fullName: { type: String, required: true, trim: true, index: true },
     avatar: { type: String },
-    avatar_public_id: { type: String, required: true },
+    avatar_public_id: { type: String},
     password: { type: String, required: true },
     refreshToken: { type: String },
 
