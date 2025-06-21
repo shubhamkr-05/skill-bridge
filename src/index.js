@@ -1,5 +1,4 @@
 import dotenv from "dotenv"
-import mongoose from "mongoose";
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
 
@@ -9,11 +8,9 @@ dotenv.config({
 
 connectDB()
 .then(() => {
-    app.listen(process.env.PORT, () => {
-        console.log(`Server is running on port ${process.env.PORT}`);
-    });
-}).catch((error) => {
-    console.error("Database connection failed:", error);    
-    process.exit(1);
-});     
-    
+    app.listen(process.env.PORT || 8000, () => {
+        console.log(`Server is Running at PORT: ${process.env.PORT}`);
+        
+    })
+})
+.catch((err) => console.log('MONDODB connection Failed'))
