@@ -37,8 +37,9 @@ import {
   getMentorRatings,
 } from "../controllers/rating.controller.js";
 import {
-  pushNotification,
   getUserNotifications,
+  markAsRead,
+  getUnseenNotificationCount,
 } from "../controllers/notification.controller.js";
 import {
   addSessionNote,
@@ -91,7 +92,9 @@ router.route("/ratings/:mentorId").get(verifyJWT, getMentorRatings);
 
 // ========== NOTIFICATIONS ==========
 router.route("/notifications").get(verifyJWT, getUserNotifications);
-router.route("/notifications").post(verifyJWT, pushNotification);
+router.route("/notifications/:notificationId/read").patch(verifyJWT, markAsRead);
+router.get("/notifications/unseen-count", verifyJWT, getUnseenNotificationCount);
+
 
 // ========== SESSION NOTES ==========
 router.route("/session-notes/:sessionId").post(verifyJWT, addSessionNote);

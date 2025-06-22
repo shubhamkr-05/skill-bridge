@@ -168,7 +168,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
 });
 
-const getMentors = asyncHandler(async (req, res) => {
+const getMentors = asyncHandler(async (req, res) => {  
   const { skill } = req.query;
 
   const filter = { role: "mentor" };
@@ -183,7 +183,7 @@ const getMentors = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, mentors, "Mentors fetched successfully"));
 });
 
-const getMentorById = asyncHandler(async (req, res) => {
+const getMentorById = asyncHandler(async (req, res) => {  
   const { mentorId } = req.params;
 
   const mentor = await User.findById(mentorId)

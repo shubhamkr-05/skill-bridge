@@ -18,8 +18,19 @@ const submitRating = asyncHandler(async (req, res) => {
 
 const getMentorRatings = asyncHandler(async (req, res) => {
   const { mentorId } = req.params;
+
   const ratings = await Rating.find({ mentor: mentorId }).populate("user", "fullName");
-  res.status(200).json(new ApiResponse(200, ratings));
+
+  const totalRatings = ratings.length;
+  const avgRating = totalRatings === 0
+    ? 0
+    : ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings;
+
+  res.status(200).json(new ApiResponse(200, {
+    ratings,
+    totalRatings,
+    averageRating: avgRating.toFixed(1), // rounded to 1 decimal, e.g., 4.3
+  }));
 });
 
 export { submitRating, getMentorRatings };
