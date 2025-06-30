@@ -28,11 +28,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const existedUser = await User.findOne({ $or: [{ username }, { email }] });
-
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
   }
-
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   let avatarUploadResult = null;
 
@@ -50,7 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
     username,
     role,
     bio: bio || "",
-    skills: role === "mentor" ? skills || [] : [],
+    skills: role === "mentor" ? JSON.parse(skills) || [] : [],
     avatar: avatarUploadResult?.url || "",
     avatar_public_id: avatarUploadResult?.public_id || "",
   });
@@ -78,7 +76,6 @@ const loginUser = asyncHandler(async (req, res) => {
   const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
   const options = { httpOnly: true, secure: true };
-
   return res.status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
