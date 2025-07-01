@@ -21,7 +21,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, email, username, password, role, skills, bio } = req.body;
+  const { fullName, email, username, password, role, bio } = req.body;
 
   if ([fullName, email, username, password, role].some(field => field?.trim() === "")) {
     throw new ApiError(400, "Required fields are missing");
@@ -42,18 +42,6 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   }
 
-  let processedSkills = [];
-  if (skills) {
-    if (typeof skills === 'string') {
-      processedSkills = skills
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-    } else if (Array.isArray(skills)) {
-      processedSkills = skills.map(s => s.trim()).filter(Boolean);
-    }
-  }
-
   const user = await User.create({
     fullName,
     email,
@@ -61,7 +49,6 @@ const registerUser = asyncHandler(async (req, res) => {
     username,
     role,
     bio: bio || "",
-    skills: role === "mentor" ? processedSkills : [],
     avatar: avatarUploadResult?.url || "",
     avatar_public_id: avatarUploadResult?.public_id || "",
   });
@@ -179,12 +166,17 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
 });
 
-const getMentors = asyncHandler(async (req, res) => {  
+const getMentors = asyncHandler(async (req, res) => {
   const { skill } = req.query;
 
   const filter = { role: "mentor" };
+
   if (skill) {
-    filter.skills = { $regex: skill, $options: "i" };
+    filter.$or = [
+      { fullName: { $regex: skill, $options: "i" } },
+      { "skills.name": { $regex: skill, $options: "i" } },
+      { bio: { $regex: skill, $options: "i" } }
+    ];
   }
 
   const mentors = await User.find(filter).select("fullName avatar skills bio");
@@ -193,6 +185,7 @@ const getMentors = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, mentors, "Mentors fetched successfully"));
 });
+
 
 const getMentorById = asyncHandler(async (req, res) => {  
   const { mentorId } = req.params;
@@ -211,6 +204,52 @@ const getMentorById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, mentor, "Mentor profile fetched"));
 });
 
+const addSkillToMentor = asyncHandler(async (req, res) => {
+  const { name, price, lectures } = req.body;
+
+  if (!name || !price || !lectures) {
+    throw new ApiError(400, "All fields are required (name, price, lectures)");
+  }
+
+  const user = await User.findById(req.user._id);
+
+  if (!user || user.role !== "mentor") {
+    throw new ApiError(403, "Only mentors can add skills");
+  }
+  
+  user.skills.push({ name, price: Number(price), lectures: Number(lectures) });
+  await user.save();
+  
+  return res.status(200).json(
+    new ApiResponse(200, user.skills, "Skill added successfully")
+  );
+});
+
+const deleteUser = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized access");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Delete avatar from cloudinary if present
+  if (user.avatar_public_id) {
+    await deleteFromCloudinary(user.avatar_public_id);
+  }
+
+  await User.findByIdAndDelete(userId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "User deleted successfully"));
+});
+
 export {
   generateAccessAndRefereshTokens,
   registerUser, 
@@ -222,4 +261,6 @@ export {
   updateUserProfile,
   getMentors,
   getMentorById,
+  addSkillToMentor,
+  deleteUser,
 };

@@ -13,7 +13,13 @@ const userSchema = new Schema(
     refreshToken: { type: String },
 
     role: { type: String, enum: ['mentor', 'user'], required: true },
-    skills: { type: [String], default: [] }, // For mentors
+    skills: [
+      {
+        name: { type: String, required: true, trim: true },
+        price: { type: Number, required: true, min: 0 },
+        lectures: { type: Number, required: true, min: 1 }
+      }
+    ], // For mentors
     bio: { type: String, trim: true, maxlength: 500 },
     isVerified: { type: Boolean, default: false },
 

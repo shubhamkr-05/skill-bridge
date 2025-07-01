@@ -9,6 +9,7 @@ import {
     changeCurrentPassword,
     getCurrentUser,
     updateUserProfile,
+    deleteUser
 } from "../controllers/user.controller.js";
 
 const router = Router();
@@ -19,6 +20,7 @@ router.route("/register").post(
   ]),
   registerUser
 );
+router.route("/delete").delete(verifyJWT, deleteUser);
 router.route("/login").post(loginUser);
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
