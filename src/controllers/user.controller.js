@@ -23,7 +23,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, username, password, role, skills, bio } = req.body;
 
-  if ([fullName, email, username, password, role].some((field) => field?.trim() === "")) {
+  if ([fullName, email, username, password, role].some(field => field?.trim() === "")) {
     throw new ApiError(400, "Required fields are missing");
   }
 
@@ -31,6 +31,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
   }
+
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   let avatarUploadResult = null;
 
@@ -41,6 +42,18 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   }
 
+  let processedSkills = [];
+  if (skills) {
+    if (typeof skills === 'string') {
+      processedSkills = skills
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+    } else if (Array.isArray(skills)) {
+      processedSkills = skills.map(s => s.trim()).filter(Boolean);
+    }
+  }
+
   const user = await User.create({
     fullName,
     email,
@@ -48,13 +61,12 @@ const registerUser = asyncHandler(async (req, res) => {
     username,
     role,
     bio: bio || "",
-    skills: role === "mentor" ? JSON.parse(skills) || [] : [],
+    skills: role === "mentor" ? processedSkills : [],
     avatar: avatarUploadResult?.url || "",
     avatar_public_id: avatarUploadResult?.public_id || "",
   });
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken");
-
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
@@ -136,33 +148,35 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "User fetched successfully"));
 });
 
-const updateUserProfile = asyncHandler(async (req, res) => {  
+const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-  
+
   const { fullName, bio, skills } = req.body;
 
-  if (req.files?.avatar) {
-    await deleteFromCloudinary(user.avatar_public_id);
-    const avatarUpload = await uploadOnCloudinary(req.files.avatar[0].path);
-    user.avatar = avatarUpload.url;
-    user.avatar_public_id = avatarUpload.public_id;
-  }  
+  // Avatar upload hata diya — kyunki ab avatar alag se hoga
 
   if (fullName) user.fullName = fullName;
   if (bio) user.bio = bio;
-  if (skills) user.skills = skills;
+
+  if (skills) {
+    // skills string mila to clean karen
+    let processedSkills = skills;
+    if (typeof skills === 'string') {
+      processedSkills = skills
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+    user.skills = processedSkills;
+  }
 
   await user.save();
 
   const updatedUser = await User.findById(user._id).select("-password -refreshToken");
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
+  return res.status(200).json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
 });
 
 const getMentors = asyncHandler(async (req, res) => {  
