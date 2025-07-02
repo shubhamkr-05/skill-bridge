@@ -53,5 +53,25 @@ const getUserAppointments = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, data));
 });
 
+// Get my accepted courses (for user)
+const getMyCourses = asyncHandler(async (req, res) => {
+  const data = await Appointment.find({
+    user: req.user._id,
+    status: 'accepted'
+  }).populate('mentor', 'fullName avatar');
 
-export { createAppointment, updateAppointmentStatus, getUserAppointments };
+  res.status(200).json(new ApiResponse(200, data, "Accepted courses fetched"));
+});
+
+// Get my students (for mentor)
+const getMyStudents = asyncHandler(async (req, res) => {
+  const data = await Appointment.find({
+    mentor: req.user._id,
+    status: 'accepted'
+  }).populate('user', 'fullName avatar');
+
+  res.status(200).json(new ApiResponse(200, data, "Accepted students fetched"));
+});
+
+
+export { createAppointment, updateAppointmentStatus, getUserAppointments, getMyCourses, getMyStudents };
