@@ -17,7 +17,8 @@ const userSchema = new Schema(
       {
         name: { type: String, required: true, trim: true },
         price: { type: Number, required: true, min: 0 },
-        lectures: { type: Number, required: true, min: 1 }
+        lectures: { type: Number, required: true, min: 1 },
+        bio: { type: String } // Add this for skill-specific description
       }
     ], // For mentors
     bio: { type: String, trim: true, maxlength: 500 },

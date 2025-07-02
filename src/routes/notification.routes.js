@@ -4,12 +4,14 @@ import {
   getUserNotifications,
   markAsRead,
   getUnseenNotificationCount,
+  markAllAsRead
 } from "../controllers/notification.controller.js";
 
 const router = Router();
 
-router.route("/notifications").get(verifyJWT, getUserNotifications);
-router.route("/notifications/:notificationId/read").patch(verifyJWT, markAsRead);
-router.get("/notifications/unseen-count", verifyJWT, getUnseenNotificationCount);
+router.route("/").get(verifyJWT, getUserNotifications);
+router.route("/mark-all-read").get(verifyJWT, markAllAsRead);
+router.route("/:notificationId/read").patch(verifyJWT, markAsRead);
+router.get("/unseen-count", verifyJWT, getUnseenNotificationCount);
 
 export default router;

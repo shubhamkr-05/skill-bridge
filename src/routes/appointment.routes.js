@@ -8,8 +8,8 @@ import {
 
 const router = Router();
 
-router.route("/appointments").post(verifyJWT, createAppointment);
-router.route("/appointments").get(verifyJWT, getUserAppointments);
-router.route("/appointments/:id/status").patch(verifyJWT, updateAppointmentStatus);
+router.route("/").post(verifyJWT, createAppointment);
+router.route("/").get(verifyJWT, getUserAppointments);
+router.route("/:id/status").patch(verifyJWT, updateAppointmentStatus);
 
 export default router;

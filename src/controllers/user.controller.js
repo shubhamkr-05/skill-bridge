@@ -205,10 +205,10 @@ const getMentorById = asyncHandler(async (req, res) => {
 });
 
 const addSkillToMentor = asyncHandler(async (req, res) => {
-  const { name, price, lectures } = req.body;
+  const { name, price, lectures, bio } = req.body;
 
-  if (!name || !price || !lectures) {
-    throw new ApiError(400, "All fields are required (name, price, lectures)");
+  if (!name || !price || !lectures || !bio) {
+    throw new ApiError(400, "All fields are required (name, price, lectures, bio)");
   }
 
   const user = await User.findById(req.user._id);
@@ -216,10 +216,10 @@ const addSkillToMentor = asyncHandler(async (req, res) => {
   if (!user || user.role !== "mentor") {
     throw new ApiError(403, "Only mentors can add skills");
   }
-  
-  user.skills.push({ name, price: Number(price), lectures: Number(lectures) });
+
+  user.skills.push({ name, price, lectures, bio });
   await user.save();
-  
+
   return res.status(200).json(
     new ApiResponse(200, user.skills, "Skill added successfully")
   );
