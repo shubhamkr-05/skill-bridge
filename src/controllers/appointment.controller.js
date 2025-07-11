@@ -73,5 +73,20 @@ const getMyStudents = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, data, "Accepted students fetched"));
 });
 
+const getAppointmentHistoryForUser = asyncHandler(async (req, res) => {
+  const appointments = await Appointment.find({ user: req.user._id })
+    .populate("mentor", "fullName avatar");
 
-export { createAppointment, updateAppointmentStatus, getUserAppointments, getMyCourses, getMyStudents };
+  res.status(200).json(new ApiResponse(200, appointments));
+});
+
+const getAppointmentHistoryForMentor = asyncHandler(async (req, res) => {
+  const appointments = await Appointment.find({ mentor: req.user._id })
+    .populate("user", "fullName avatar");
+
+  res.status(200).json(new ApiResponse(200, appointments));
+});
+
+
+export { createAppointment, updateAppointmentStatus, getUserAppointments, getMyCourses, getMyStudents,getAppointmentHistoryForUser, getAppointmentHistoryForMentor
+ };

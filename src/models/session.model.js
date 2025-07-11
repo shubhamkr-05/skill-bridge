@@ -7,9 +7,10 @@ const sessionSchema = new Schema(
     appointmentId: { type: Schema.Types.ObjectId, ref: "Appointment", required: true },
     date: { type: Date, required: true },
     time: { type: String, required: true }, // e.g. '17:30'
-    videoCallLink: { type: String }, // Jitsi/Daily.co/WebRTC link
+    videoCallLink: { type: String },
     chatId: { type: Schema.Types.ObjectId, ref: "Chat" },
     completed: { type: Boolean, default: false },
+    notes: { type: String } // optional: mentor notes
   },
   { timestamps: true }
 );

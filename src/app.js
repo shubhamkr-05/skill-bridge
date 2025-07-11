@@ -40,6 +40,6 @@ app.use("/session-notes", sessionNoteRouter);
 app.use("/users", userRouter);
 app.use("/mentors", mentorRouter);
 
-// https://localhost:8000/users/login
+// http://localhost:8000/users/login
 
 export { app };

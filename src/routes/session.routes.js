@@ -6,12 +6,18 @@ import {
   createSession,
   getMentorSessions,
   getUserSessions,
+  getActiveStudents,
+  markSessionAsCompleted,
+  getUserUpcomingSessions
 } from "../controllers/session.controller.js";
 
 const router = Router();
 
-router.route("/sessions/schedule").post(verifyJWT, authorizeRoles("mentor"), createSession);
-router.route("/sessions-mentors").get(verifyJWT, getMentorSessions);
-router.route("/sessions-users").get(verifyJWT, getUserSessions);
+router.post("/", verifyJWT, createSession);
+router.get("/user", verifyJWT, getUserSessions);
+router.get("/mentor", verifyJWT, getMentorSessions);
+router.get("/mentor/active-students", verifyJWT, getActiveStudents);
+router.patch("/:sessionId/complete", verifyJWT, markSessionAsCompleted);
+router.get("/user/upcoming", verifyJWT, getUserUpcomingSessions);
 
 export default router;

@@ -7,8 +7,8 @@ const appointmentSchema = new Schema(
     skill: { type: String, required: true },
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected", "cancelled"],
-      default: "pending",
+      enum: ["booked", "cancelled"],
+      default: "booked",
     },
     requestedAt: { type: Date, default: Date.now },
     acceptedAt: { type: Date },
