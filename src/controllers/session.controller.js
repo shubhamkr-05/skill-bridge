@@ -5,7 +5,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { Appointment } from "../models/appointment.model.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
-// ✅ Create session
 const createSession = asyncHandler(async (req, res) => {
   const { appointmentId, date, time, videoCallLink } = req.body;
 
@@ -15,8 +14,8 @@ const createSession = asyncHandler(async (req, res) => {
   if (appointment.mentor.toString() !== req.user._id.toString())
     throw new ApiError(403, "Only mentor can create session");
 
-  if (appointment.status !== "accepted")
-    throw new ApiError(400, "Appointment not accepted");
+  if (appointment.sessionStatus === 'scheduled')
+    throw new ApiError(400, "Session already scheduled");
 
   const session = await Session.create({
     mentor: appointment.mentor,
@@ -27,7 +26,10 @@ const createSession = asyncHandler(async (req, res) => {
     videoCallLink,
   });
 
-  // ✅ Notify User
+  // ✅ Update appointment
+  appointment.sessionStatus = 'scheduled';
+  await appointment.save();
+
   await sendNotification({
     userId: appointment.user,
     message: `Your class has been scheduled on ${date} at ${time}`,
@@ -38,13 +40,11 @@ const createSession = asyncHandler(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, session, "Session created"));
 });
 
-// ✅ Get user's sessions
 const getUserSessions = asyncHandler(async (req, res) => {
   const sessions = await Session.find({ user: req.user._id }).populate("mentor", "fullName");
   res.status(200).json(new ApiResponse(200, sessions));
 });
 
-// ✅ Get mentor's sessions
 const getMentorSessions = asyncHandler(async (req, res) => {
   const sessions = await Session.find({ mentor: req.user._id }).populate("user", "fullName");
   res.status(200).json(new ApiResponse(200, sessions));

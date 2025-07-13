@@ -5,17 +5,16 @@ const appointmentSchema = new Schema(
     mentor: { type: Schema.Types.ObjectId, ref: "User", required: true },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     skill: { type: String, required: true },
-    status: {
+    sessionStatus: {
       type: String,
-      enum: ["booked", "cancelled"],
-      default: "booked",
+      enum: ["scheduled", "notScheduled"],
+      default: "notScheduled",
     },
+    session: { type: Schema.Types.ObjectId, ref: "Session" }, // Reference to the session if scheduled
     requestedAt: { type: Date, default: Date.now },
-    acceptedAt: { type: Date },
     fee: { type: Number, required: true }, // store fee amount
-    paid: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true } 
 );
 
 export const Appointment = mongoose.model("Appointment", appointmentSchema);

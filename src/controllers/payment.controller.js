@@ -5,10 +5,9 @@ import crypto from "crypto";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { sendNotification } from "../utils/sendNotification.js";
 
-const createRazorpayOrder = asyncHandler(async (req, res) => {
-  console.log('Creating Razorpay order with body:', req.user);
-  
+const createRazorpayOrder = asyncHandler(async (req, res) => {  
   const { amount, mentorId, skill } = req.body;
 
   if (!amount || !mentorId || !skill) {
@@ -37,7 +36,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
   );
 });
 
-const verifyAndCreateAppointment = asyncHandler(async (req, res) => {
+const verifyAndCreateAppointment = asyncHandler(async (req, res) => {  
   const {
     razorpay_order_id,
     razorpay_payment_id,
@@ -75,8 +74,9 @@ const verifyAndCreateAppointment = asyncHandler(async (req, res) => {
     mentor: mentorId,
     skill,
     fee,
-    status: "booked",
-  });
+    sessionStatus: "notScheduled",
+    requestedAt: new Date(),
+  });  
 
   // Step 3: Store Payment Record
   const payment = await Payment.create({
@@ -88,8 +88,8 @@ const verifyAndCreateAppointment = asyncHandler(async (req, res) => {
     status: "success",
   });
 
-  await Notification.create({
-    user: mentorId,
+  await sendNotification({
+    userId: mentorId,
     message: `${req.user.fullName} booked your course: ${skill}`,
     type: "appointment_request",
     link: `/appointments/${appointment._id}`,

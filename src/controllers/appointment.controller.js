@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Appointment } from "../models/appointment.model.js";
 import { Notification } from "../models/notification.model.js";
 
+// Create appointment after payment success
 const createAppointment = asyncHandler(async (req, res) => {
   const { mentorId, skill, fee } = req.body;
   if (!mentorId || !skill || !fee) throw new ApiError(400, "All fields required");
@@ -17,76 +18,80 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   await Notification.create({
     user: mentorId,
-    message: `${req.user.fullName} requested an appointment for ${skill}`,
-    type: "appointment_request",
+    message: `${req.user.fullName} booked a course for ${skill}`,
+    type: "appointment_booked",
     link: `/appointments/${appointment._id}`,
   });
 
-  res.status(201).json(new ApiResponse(201, appointment, "Appointment requested"));
+  res.status(201).json(new ApiResponse(201, appointment, "Appointment booked"));
 });
 
-const updateAppointmentStatus = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  const appointment = await Appointment.findById(id).populate("user mentor");
-  if (!appointment) throw new ApiError(404, "Appointment not found");
-
-  appointment.status = status;
-  if (status === "accepted") appointment.acceptedAt = new Date();
-  await appointment.save();
-
-  await Notification.create({
-    user: appointment.user._id,
-    message: `Your appointment was ${status} by ${appointment.mentor.fullName}`,
-    type: status === "accepted" ? "appointment_accepted" : "appointment_rejected",
-    link: `/appointments/${appointment._id}`,
-  });
-
-  res.status(200).json(new ApiResponse(200, appointment, `Appointment ${status}`));
-});
-
-const getUserAppointments = asyncHandler(async (req, res) => {
+// Get all appointments where user is involved
+const getUserAppointments = asyncHandler(async (req, res) => {  
   const data = await Appointment.find({
-    $or: [{ user: req.user._id }, { mentor: req.user._id }]
-  }).populate("mentor user");
+    $or: [{ user: req.user._id }, { mentor: req.user._id }],
+  })
+    .populate("mentor user")
+    .populate("session")
+    .populate("skill");
+
   res.status(200).json(new ApiResponse(200, data));
 });
 
-// Get my accepted courses (for user)
+// Controller for GET /appointments/my-courses
 const getMyCourses = asyncHandler(async (req, res) => {
-  const data = await Appointment.find({
-    user: req.user._id,
-    status: 'accepted'
-  }).populate('mentor', 'fullName avatar');
+  const appointments = await Appointment.find({ user: req.user._id })
+    .populate('mentor', 'fullName avatar')
+    .populate('session'); // ✅ populate session here
 
-  res.status(200).json(new ApiResponse(200, data, "Accepted courses fetched"));
+  res.status(200).json(new ApiResponse(200, appointments));
 });
 
-// Get my students (for mentor)
+
+// Get mentor's active (scheduled) students
 const getMyStudents = asyncHandler(async (req, res) => {
   const data = await Appointment.find({
     mentor: req.user._id,
-    status: 'accepted'
-  }).populate('user', 'fullName avatar');
+    sessionStatus: "scheduled",
+  }).populate("user", "fullName avatar");
 
-  res.status(200).json(new ApiResponse(200, data, "Accepted students fetched"));
+  res.status(200).json(new ApiResponse(200, data, "Scheduled students fetched"));
 });
 
+// Appointment history for user
 const getAppointmentHistoryForUser = asyncHandler(async (req, res) => {
   const appointments = await Appointment.find({ user: req.user._id })
-    .populate("mentor", "fullName avatar");
+    .populate("mentor", "fullName avatar")
+    .populate("session");
 
   res.status(200).json(new ApiResponse(200, appointments));
 });
 
+// Appointment history for mentor
 const getAppointmentHistoryForMentor = asyncHandler(async (req, res) => {
   const appointments = await Appointment.find({ mentor: req.user._id })
-    .populate("user", "fullName avatar");
+    .populate("user", "fullName avatar")
+    .populate("session");
 
   res.status(200).json(new ApiResponse(200, appointments));
 });
 
+const getUnscheduledAppointmentsForMentor = asyncHandler(async (req, res) => {
+  const data = await Appointment.find({
+    mentor: req.user._id,
+    sessionStatus: 'notScheduled'
+  }).populate("user", "fullName avatar");
 
-export { createAppointment, updateAppointmentStatus, getUserAppointments, getMyCourses, getMyStudents,getAppointmentHistoryForUser, getAppointmentHistoryForMentor
- };
+  res.status(200).json(new ApiResponse(200, data));
+});
+
+
+export {
+  createAppointment,
+  getUserAppointments,
+  getMyCourses,
+  getMyStudents,
+  getAppointmentHistoryForUser,
+  getAppointmentHistoryForMentor,
+  getUnscheduledAppointmentsForMentor,
+};
