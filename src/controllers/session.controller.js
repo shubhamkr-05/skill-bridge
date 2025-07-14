@@ -70,46 +70,8 @@ const getMentorSessions = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, formattedSessions));
 });
 
-
-const getActiveStudents = asyncHandler(async (req, res) => {
-  const appointments = await Appointment.find({
-    mentor: req.user._id,
-    sessionStatus: "scheduled"
-  }).populate("user", "fullName avatar");
-
-  res.status(200).json(new ApiResponse(200, appointments));
-});
-
-const markSessionAsCompleted = asyncHandler(async (req, res) => {
-  const { sessionId } = req.params;
-  const session = await Session.findById(sessionId);
-  if (!session) throw new ApiError(404, "Session not found");
-
-  if (session.mentor.toString() !== req.user._id.toString()) {
-    throw new ApiError(403, "Unauthorized");
-  }
-
-  session.completed = true;
-  await session.save();
-
-  res.status(200).json(new ApiResponse(200, session, "Session marked as completed"));
-});
-
-const getUserUpcomingSessions = asyncHandler(async (req, res) => {
-  const sessions = await Session.find({
-    user: req.user._id,
-    completed: false,
-    date: { $gte: new Date() },
-  }).populate("mentor", "fullName avatar");
-
-  res.status(200).json(new ApiResponse(200, sessions));
-});
-
 export {
   createSession,
   getUserSessions,
   getMentorSessions,
-  getActiveStudents,
-  markSessionAsCompleted,
-  getUserUpcomingSessions,
 };
