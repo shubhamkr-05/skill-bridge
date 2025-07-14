@@ -1,13 +1,20 @@
-import { Router } from "express";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import express from "express";
 import {
-    sendMessage,
-    getSessionChat,
-} from "../controllers/chat.controller.js"; 
+  getUserChats,
+  getMessages,
+  createMessage,
+  getContacts,
+  createChat,
+} from "../controllers/chat.controller.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
-const router = Router();
+const router = express.Router();
 
-router.route("/send").post(verifyJWT, sendMessage);
-router.route("/:sessionId").get(verifyJWT, getSessionChat);
+router.get("/chats", verifyJWT, getUserChats);
+router.get("/messages/:chatId", verifyJWT, getMessages);
+router.post("/messages", verifyJWT, upload.single("file"), createMessage);
+router.get("/contacts", verifyJWT, getContacts);
+router.post("/create", verifyJWT, createChat);
 
 export default router;

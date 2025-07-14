@@ -32,7 +32,7 @@ import healthcheckRouter from "./routes/healthcheck.routes.js";
 app.use("/healthcheck", healthcheckRouter);
 app.use("/appointments", appointmentRouter);
 app.use("/sessions", sessionRouter);
-app.use("/chat", chatRouter);
+app.use("/chats", chatRouter);
 app.use("/payments", paymentRouter);
 app.use("/ratings", ratingRouter);
 app.use("/notifications", notificationRouter);

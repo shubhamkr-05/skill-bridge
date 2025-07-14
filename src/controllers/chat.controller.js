@@ -1,30 +1,79 @@
 import { Chat } from "../models/chat.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { Message } from "../models/message.model.js";
+import { Appointment } from "../models/appointment.model.js";
 
-const sendMessage = asyncHandler(async (req, res) => {
-  const { sessionId, content } = req.body;
+export const getUserChats = async (req, res) => {
+  const chats = await Chat.find({ members: req.user._id }).populate("members", "fullName avatar");
+  res.json({ success: true, data: chats });
+};
 
-  let chat = await Chat.findOne({ sessionId });
+export const getMessages = async (req, res) => {
+  const chatId = req.params.chatId;
+  const userId = req.user._id;
 
-  if (!chat) {
-    chat = await Chat.create({
-      sessionId,
-      participants: [req.user._id],
-      messages: [],
-    });
+  // 1. Mark all messages not yet seen by this user
+  await Message.updateMany(
+    { chat: chatId, seenBy: { $ne: userId } },
+    { $addToSet: { seenBy: userId } }
+  );
+
+  // 2. Fetch updated messages
+  const messages = await Message.find({ chat: chatId }).populate("sender", "fullName");
+
+  res.json({ success: true, data: messages });
+};
+
+export const createMessage = async (req, res) => {
+  const { chatId, message } = req.body;
+
+  let fileUrl = null;
+  if (req.file) {
+    fileUrl = `/uploads/${req.file.filename}`; // Matches our static route
   }
 
-  chat.messages.push({ sender: req.user._id, content, timestamp: new Date() });
-  await chat.save();
+  const newMsg = await Message.create({
+    chat: chatId,
+    sender: req.user._id,
+    message,
+    fileUrl,
+    seenBy: [req.user._id],
+  });
 
-  res.status(201).json(new ApiResponse(201, chat, "Message sent"));
-});
+  res.status(201).json({ success: true, data: newMsg });
+};
 
-const getSessionChat = asyncHandler(async (req, res) => {
-  const { sessionId } = req.params;
-  const chat = await Chat.findOne({ sessionId }).populate("messages.sender", "fullName");
-  res.status(200).json(new ApiResponse(200, chat));
-});
+export const createChat = async (req, res) => {
+  const { recipientId } = req.body;
 
-export { sendMessage, getSessionChat };
+  const existingChat = await Chat.findOne({
+    members: { $all: [req.user._id, recipientId] },
+  });
+
+  if (existingChat) {
+    return res.status(200).json({ success: true, data: existingChat });
+  }
+
+  const newChat = await Chat.create({
+    members: [req.user._id, recipientId],
+  });
+
+  res.status(201).json({ success: true, data: newChat });
+};
+
+export const getContacts = async (req, res) => {
+  const appointments = await Appointment.find({
+    $or: [
+      { user: req.user._id },
+      { mentor: req.user._id },
+    ],
+  }).populate("user mentor", "fullName avatar");
+
+  const contacts = new Set();
+  appointments.forEach((a) => {
+    if (String(a.user._id) !== req.user._id.toString()) contacts.add(JSON.stringify(a.user));
+    if (String(a.mentor._id) !== req.user._id.toString()) contacts.add(JSON.stringify(a.mentor));
+  });
+
+  const parsedContacts = Array.from(contacts).map((c) => JSON.parse(c));
+  res.json({ success: true, data: parsedContacts });
+};
