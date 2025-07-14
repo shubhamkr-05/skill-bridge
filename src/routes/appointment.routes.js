@@ -18,6 +18,7 @@ router.route("/").get(verifyJWT, getUserAppointments);
 router.get('/my-courses', verifyJWT, getMyCourses);
 router.get('/my-students', verifyJWT, getMyStudents);
 router.get("/not-scheduled", verifyJWT, authorizeRoles("mentor"), getUnscheduledAppointmentsForMentor);
-
+router.get("/history/user", verifyJWT, getAppointmentHistoryForUser);
+router.get("/history/mentor", verifyJWT, authorizeRoles("mentor"), getAppointmentHistoryForMentor);
 
 export default router;

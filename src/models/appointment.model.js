@@ -10,11 +10,11 @@ const appointmentSchema = new Schema(
       enum: ["scheduled", "notScheduled"],
       default: "notScheduled",
     },
-    session: { type: Schema.Types.ObjectId, ref: "Session" }, // Reference to the session if scheduled
+    sessions: [{ type: Schema.Types.ObjectId, ref: "Session" }],
     requestedAt: { type: Date, default: Date.now },
-    fee: { type: Number, required: true }, // store fee amount
+    fee: { type: Number, required: true },
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 export const Appointment = mongoose.model("Appointment", appointmentSchema);

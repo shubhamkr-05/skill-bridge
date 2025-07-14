@@ -27,13 +27,12 @@ const createAppointment = asyncHandler(async (req, res) => {
 });
 
 // Get all appointments where user is involved
-const getUserAppointments = asyncHandler(async (req, res) => {  
+const getUserAppointments = asyncHandler(async (req, res) => {
   const data = await Appointment.find({
     $or: [{ user: req.user._id }, { mentor: req.user._id }],
   })
     .populate("mentor user")
-    .populate("session")
-    .populate("skill");
+    .populate("sessions");
 
   res.status(200).json(new ApiResponse(200, data));
 });
@@ -42,40 +41,48 @@ const getUserAppointments = asyncHandler(async (req, res) => {
 const getMyCourses = asyncHandler(async (req, res) => {
   const appointments = await Appointment.find({ user: req.user._id })
     .populate('mentor', 'fullName avatar')
-    .populate('session'); // ✅ populate session here
+    .populate('sessions');
 
   res.status(200).json(new ApiResponse(200, appointments));
 });
-
 
 // Get mentor's active (scheduled) students
 const getMyStudents = asyncHandler(async (req, res) => {
   const data = await Appointment.find({
     mentor: req.user._id,
     sessionStatus: "scheduled",
-  }).populate("user", "fullName avatar");
+  })
+    .populate("user", "fullName avatar")
+    .populate("sessions");
 
   res.status(200).json(new ApiResponse(200, data, "Scheduled students fetched"));
 });
 
 // Appointment history for user
 const getAppointmentHistoryForUser = asyncHandler(async (req, res) => {
-  const appointments = await Appointment.find({ user: req.user._id })
+  const appointments = await Appointment.find({
+    user: req.user._id,
+    sessionStatus: "scheduled"
+  })
     .populate("mentor", "fullName avatar")
-    .populate("session");
+    .populate("sessions");
 
   res.status(200).json(new ApiResponse(200, appointments));
 });
 
 // Appointment history for mentor
 const getAppointmentHistoryForMentor = asyncHandler(async (req, res) => {
-  const appointments = await Appointment.find({ mentor: req.user._id })
+  const appointments = await Appointment.find({
+    mentor: req.user._id,
+    sessionStatus: "scheduled"
+  })
     .populate("user", "fullName avatar")
-    .populate("session");
+    .populate("sessions");
 
   res.status(200).json(new ApiResponse(200, appointments));
 });
 
+// Appointments with no session yet (for mentors)
 const getUnscheduledAppointmentsForMentor = asyncHandler(async (req, res) => {
   const data = await Appointment.find({
     mentor: req.user._id,
@@ -84,7 +91,6 @@ const getUnscheduledAppointmentsForMentor = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, data));
 });
-
 
 export {
   createAppointment,
