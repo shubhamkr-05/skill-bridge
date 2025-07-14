@@ -9,6 +9,8 @@ import {
   getUnscheduledAppointmentsForMentor,
   getAppointmentHistoryForUser,
   getAppointmentHistoryForMentor,
+  getMentorAppointmentStudents,
+  getStudentAppointmentMentors
 } from "../controllers/appointment.controller.js";  
 
 const router = Router();
@@ -20,5 +22,7 @@ router.get('/my-students', verifyJWT, getMyStudents);
 router.get("/not-scheduled", verifyJWT, authorizeRoles("mentor"), getUnscheduledAppointmentsForMentor);
 router.get("/history/user", verifyJWT, getAppointmentHistoryForUser);
 router.get("/history/mentor", verifyJWT, authorizeRoles("mentor"), getAppointmentHistoryForMentor);
+router.get("/mentor/students", verifyJWT, getMentorAppointmentStudents);
+router.get("/student/mentors", verifyJWT, getStudentAppointmentMentors);
 
 export default router;

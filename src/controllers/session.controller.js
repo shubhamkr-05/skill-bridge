@@ -42,15 +42,34 @@ const createSession = asyncHandler(async (req, res) => {
 
 // Get all sessions for a user
 const getUserSessions = asyncHandler(async (req, res) => {
-  const sessions = await Session.find({ user: req.user._id }).populate("mentor", "fullName");
-  res.status(200).json(new ApiResponse(200, sessions));
+  const sessions = await Session.find({ user: req.user._id })
+    .populate("mentor", "fullName avatar")
+    .populate("appointmentId", "skill"); // populate appointment to get skill
+
+  // Format skill at top level like mentorSessions
+  const formattedSessions = sessions.map((session) => ({
+    ...session.toObject(),
+    skill: session.appointmentId?.skill || null,
+  }));
+
+  res.status(200).json(new ApiResponse(200, formattedSessions));
 });
 
 // Get all sessions for a mentor
 const getMentorSessions = asyncHandler(async (req, res) => {
-  const sessions = await Session.find({ mentor: req.user._id }).populate("user", "fullName");
-  res.status(200).json(new ApiResponse(200, sessions));
+  const sessions = await Session.find({ mentor: req.user._id })
+    .populate("user", "fullName avatar")
+    .populate("appointmentId", "skill"); // populate appointment to get skill
+
+  // Optionally restructure if you want skill at top level
+  const formattedSessions = sessions.map((session) => ({
+    ...session.toObject(),
+    skill: session.appointmentId?.skill || null,
+  }));
+
+  res.status(200).json(new ApiResponse(200, formattedSessions));
 });
+
 
 const getActiveStudents = asyncHandler(async (req, res) => {
   const appointments = await Appointment.find({

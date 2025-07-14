@@ -92,6 +92,29 @@ const getUnscheduledAppointmentsForMentor = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, data));
 });
 
+// controllers/sessionController.js or appointmentController.js
+
+const getMentorAppointmentStudents = asyncHandler(async (req, res) => {
+  const appointments = await Appointment.find({
+    mentor: req.user._id,
+  })
+    .populate("user", "fullName avatar")
+    .select("user skill sessionStatus");
+
+  res.status(200).json(new ApiResponse(200, appointments));
+});
+
+const getStudentAppointmentMentors = asyncHandler(async (req, res) => {
+  const appointments = await Appointment.find({
+    user: req.user._id,
+  })
+    .populate("mentor", "fullName avatar")
+    .select("mentor skill sessionStatus");
+
+  res.status(200).json(new ApiResponse(200, appointments));
+});
+
+
 export {
   createAppointment,
   getUserAppointments,
@@ -100,4 +123,6 @@ export {
   getAppointmentHistoryForUser,
   getAppointmentHistoryForMentor,
   getUnscheduledAppointmentsForMentor,
+  getMentorAppointmentStudents,
+  getStudentAppointmentMentors
 };
