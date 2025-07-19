@@ -28,7 +28,7 @@ let onlineUsers = {};
 
 // ✅ Socket.IO connection logic
 io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id);
+  //console.log("New client connected:", socket.id);
 
   // ➕ Add user to onlineUsers
   socket.on("add-user", (userId) => {
@@ -62,7 +62,7 @@ io.on("connection", (socket) => {
         break;
       }
     }
-    console.log("Client disconnected:", socket.id);
+    //console.log("Client disconnected:", socket.id);
   });
 });
 

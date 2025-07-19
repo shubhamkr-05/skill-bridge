@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get("/chats", verifyJWT, getUserChats);
 router.get("/messages/:chatId", verifyJWT, getMessages);
-router.post("/messages", verifyJWT, upload.single("file"), createMessage);
+router.post("/message",verifyJWT, upload.fields([{ name: "file", maxCount: 1 }]), createMessage);
 router.get("/contacts", verifyJWT, getContacts);
 router.post("/create", verifyJWT, createChat);
 

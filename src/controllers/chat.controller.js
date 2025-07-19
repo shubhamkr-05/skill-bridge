@@ -1,6 +1,7 @@
 import { Chat } from "../models/chat.model.js";
 import { Message } from "../models/message.model.js";
 import { Appointment } from "../models/appointment.model.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 
 export const getUserChats = async (req, res) => {
   const chats = await Chat.find({ members: req.user._id }).populate("members", "fullName avatar");
@@ -27,19 +28,33 @@ export const createMessage = async (req, res) => {
   const { chatId, message } = req.body;
 
   let fileUrl = null;
-  if (req.file) {
-    fileUrl = `/uploads/${req.file.filename}`; // Matches our static route
+  let filePublicId = null;
+
+  // If file is attached
+  const fileLocalPath = req.files?.file?.[0]?.path;
+
+  if (fileLocalPath) {
+    const uploadResult = await uploadOnCloudinary(fileLocalPath);
+
+    if (!uploadResult) {
+      return res.status(400).json({ success: false, message: "File upload failed" });
+    }
+
+    fileUrl = uploadResult.url;
+    filePublicId = uploadResult.public_id;
   }
 
+  // Create and save the message
   const newMsg = await Message.create({
     chat: chatId,
     sender: req.user._id,
     message,
     fileUrl,
+    filePublicId,
     seenBy: [req.user._id],
   });
 
-  res.status(201).json({ success: true, data: newMsg });
+  return res.status(201).json({ success: true, data: newMsg });
 };
 
 export const createChat = async (req, res) => {

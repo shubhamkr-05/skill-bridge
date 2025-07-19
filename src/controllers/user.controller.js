@@ -141,24 +141,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  const { fullName, bio, skills } = req.body;
-
-  // Avatar upload hata diya — kyunki ab avatar alag se hoga
+  const { fullName, bio } = req.body;
 
   if (fullName) user.fullName = fullName;
   if (bio) user.bio = bio;
-
-  if (skills) {
-    // skills string mila to clean karen
-    let processedSkills = skills;
-    if (typeof skills === 'string') {
-      processedSkills = skills
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-    }
-    user.skills = processedSkills;
-  }
 
   await user.save();
 
