@@ -49,7 +49,7 @@ const registerUser = asyncHandler(async (req, res) => {
     username,
     role,
     bio: bio || "",
-    avatar: avatarUploadResult?.url || "",
+    avatar: avatarUploadResult?.secure_url || "",
     avatar_public_id: avatarUploadResult?.public_id || "",
   });
 

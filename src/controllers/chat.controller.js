@@ -40,7 +40,7 @@ export const createMessage = async (req, res) => {
       return res.status(400).json({ success: false, message: "File upload failed" });
     }
 
-    fileUrl = uploadResult.url;
+    fileUrl = uploadResult.secure_url;
     filePublicId = uploadResult.public_id;
   }
 
