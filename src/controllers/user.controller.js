@@ -155,8 +155,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
 const getMentors = asyncHandler(async (req, res) => {
   const { skill } = req.query;
-  console.log("Listeningfor mentors");
-
+  
   const filter = { role: "mentor" };
 
   if (skill) {
@@ -167,9 +166,7 @@ const getMentors = asyncHandler(async (req, res) => {
     ];
   }
 
-  const mentors = await User.find(filter).select("fullName avatar skills bio");
-  console.log('Mentors fetched:', mentors);
-    
+  const mentors = await User.find(filter).select("fullName avatar skills bio");    
 
   return res
     .status(200)
