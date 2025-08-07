@@ -3,8 +3,8 @@ import { Appointment } from "../models/appointment.model.js";
 import razorpay from "../utils/razorpay.js";
 import crypto from "crypto";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
 const createRazorpayOrder = asyncHandler(async (req, res) => {  

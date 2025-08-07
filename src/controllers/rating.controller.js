@@ -1,6 +1,6 @@
 import { Rating } from "../models/rating.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 
 const submitRating = asyncHandler(async (req, res) => {
   const { mentorId, sessionId, rating, review } = req.body;

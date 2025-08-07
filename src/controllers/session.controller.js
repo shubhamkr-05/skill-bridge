@@ -1,8 +1,8 @@
 import { Session } from "../models/session.model.js";
 import { Appointment } from "../models/appointment.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiError } from "../utils/apiError.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
 // Create a new session under an appointment

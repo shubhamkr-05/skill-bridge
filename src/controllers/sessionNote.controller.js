@@ -1,6 +1,6 @@
 import { SessionNote } from "../models/sessionNote.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 
 const addSessionNote = asyncHandler(async (req, res) => {
   const { sessionId, userId, note, resourceLink } = req.body;
